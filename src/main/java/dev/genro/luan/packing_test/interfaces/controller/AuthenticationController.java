@@ -3,6 +3,12 @@ package dev.genro.luan.packing_test.interfaces.controller;
 import dev.genro.luan.packing_test.configuration.security.JwtUtil;
 import dev.genro.luan.packing_test.interfaces.dto.AuthenticationRequest;
 import dev.genro.luan.packing_test.interfaces.dto.AuthenticationResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1")
+@Tag(name = "JWT Generator", description = "Endpoint to generate a JWT.")
 public class AuthenticationController {
 
   private final AuthenticationManager authenticationManager;
@@ -35,6 +42,33 @@ public class AuthenticationController {
   }
 
   @PostMapping("/authenticate")
+  @Operation(summary = "Authenticate user and generate JWT",
+      description = "Takes user credentials (username and password) and, if valid, returns a JWT token for accessing secured endpoints.",
+      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          description = "User credentials for authentication.",
+          required = true,
+          content = @Content(
+              mediaType = "application/json",
+              schema = @Schema(implementation = AuthenticationRequest.class),
+              examples = @ExampleObject(
+                  name = "Sample Authentication Request",
+                  summary = "Example payload with default credentials",
+                  value = """
+                      {
+                          "username": "user",
+                          "password": "password"
+                      }
+                      """
+              )
+          )
+      ),
+      responses = {
+          @ApiResponse(responseCode = "200", description = "Authentication successful, JWT returned",
+              content = @Content(mediaType = "application/json",
+                  schema = @Schema(implementation = AuthenticationResponse.class))),
+          @ApiResponse(responseCode = "401", description = "Authentication failed: Incorrect username or password",
+              content = @Content(mediaType = "text/plain"))
+      })
   public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) {
     try {
       log.info("Attempting to authenticate user: {}", authenticationRequest.username());

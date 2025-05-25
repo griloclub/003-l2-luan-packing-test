@@ -1,6 +1,7 @@
 package dev.genro.luan.packing_test.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.genro.luan.packing_test.interfaces.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,9 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -46,13 +44,12 @@ public class SecurityConfig {
     return (request, response, authException) -> {
       response.setContentType("application/json;charset=UTF-8");
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      Map<String, Object> data = new HashMap<>();
-      data.put("timestamp", System.currentTimeMillis());
-      data.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-      data.put("error", "Unauthorized");
-      data.put("message", "Authentication token was missing, invalid or expired");
-      data.put("path", request.getRequestURI());
-      response.getWriter().write(new ObjectMapper().writeValueAsString(data));
+      var apiErrorResponse = new ApiErrorResponse(System.currentTimeMillis(),
+          HttpServletResponse.SC_UNAUTHORIZED,
+          "Unauthorized",
+          "Authentication token was missing, invalid or expired",
+          request.getRequestURI());
+      response.getWriter().write(new ObjectMapper().writeValueAsString(apiErrorResponse));
     };
   }
 

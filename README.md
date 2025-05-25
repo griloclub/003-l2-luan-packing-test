@@ -197,6 +197,81 @@ Example Success Response (OrdersResponse):
 ```
 (The observation field will be omitted for successfully packed boxes and will contain a message for products that could not be packed).
 
+## Authentication (JWT)
+This API uses JWT (JSON Web Token) Bearer token authentication to secure its endpoints (except for the /api/v1/authenticate endpoint itself).
+
+To access secured endpoints like /api/v1/packaging/optimize, you first need to obtain a JWT by authenticating with valid credentials, and then include this JWT in the Authorization header of your subsequent requests.
+
+### Obtaining a JWT Token
+   You can get a JWT by sending a POST request to the /api/v1/authenticate endpoint with your username and password.
+
+Endpoint: POST /api/v1/authenticate
+
+Request Body:
+
+JSON
+
+{
+"username": "user",
+"password": "password"
+}
+
+(Note: The default credentials are username user and password password as per the current implementation)
+
+Successful Response (200 OK):
+
+```json5
+{
+"jwt": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjc4ODg2NDAwLCJleHAiOjE2Nzg4ODk0MDB9.exampleTokenSignature"
+}
+```
+Copy the jwt value received. This is your Bearer token.
+
+## Using the JWT to Access Secured Endpoints
+### Manual Authentication using curl
+Once you have the JWT, you need to include it in the Authorization header for requests to secured endpoints, prefixed with Bearer.
+
+Example curl request to the secured /api/v1/packaging/optimize endpoint:
+
+Replace <YOUR_JWT_HERE> with the actual token you obtained. Replace the example request body with your actual packaging data.
+
+```bash
+curl -X POST http://localhost:8080/api/v1/packaging/optimize \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer <YOUR_JWT_HERE>" \
+-d '{
+"orders": [
+{
+"order_id": "ORD001_SECURED",
+"products": [
+{
+"product_id": "PROD_ITEM_S",
+"dimension": {
+"height": 10,
+"width": 10,
+"length": 10
+}
+}
+]
+}
+]
+}'
+```
+If the token is valid and not expired, you will receive the normal response from the endpoint (e.g., a 200 OK with the packaging solution). If the token is missing, invalid, or expired, you will receive a 401 Unauthorized error.
+
+### Using JWT Authentication in Swagger UI
+The Swagger UI is configured to support JWT Bearer authentication, making it easy to test secured endpoints.
+
+Open Swagger UI: Navigate to http://localhost:8080/swagger-ui.html in your browser.
+
+Authenticate (Globally for Swagger UI):
+Look for an "Authorize" button, usually located near the top right of the page. Click it.
+A dialog will appear, prompting you for "bearerAuth" (or the name you configured for your SecurityScheme).
+
+In the "Value" field, paste your full JWT token (the long string you received from the /api/v1/authenticate endpoint).
+Note: Some Swagger UI versions might require you to prefix it with Bearer (e.g., Bearer eyJ...), while others will add the "Bearer " prefix automatically. Check the instructions in the dialog or try both if one doesn't work.
+Click "Authorize" in the dialog, and then "Close".
+
 ### Available Box Sizes
 
 Seu Manoel has the following predefined cardboard box sizes (Height x Width x Length, in centimeters): 
