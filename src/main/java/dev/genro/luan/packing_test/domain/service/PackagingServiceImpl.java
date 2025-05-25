@@ -53,7 +53,7 @@ public class PackagingServiceImpl implements PackagingService {
     List<OpenBox> currentlyOpenBoxes = new ArrayList<>();
     List<Product> unpackableProducts = new ArrayList<>();
 
-    for (Product product : productsToPack) {
+    productsToPack.forEach(product -> {
       log.info("Attempting to pack product: {} with volume {} for order {}", product.productId(), product.volume(), orderRequest.orderId());
       boolean productPlaced = false;
 
@@ -81,14 +81,13 @@ public class PackagingServiceImpl implements PackagingService {
         if (chosenNewBoxType != null) {
           OpenBox newBox = new OpenBox(chosenNewBoxType, new ArrayList<>(), chosenNewBoxType.volume());
           currentlyOpenBoxes.add(newBox.addProduct(product));
-          productPlaced = true;
           log.info("Product {} for order {} placed in new box: {}", product.productId(), orderRequest.orderId(), chosenNewBoxType.name());
         } else {
-          log.warn("Product {} (Volume: {}) for order {} could not be placed in any new box.", product.productId(), product.volume(), orderRequest.orderId());
+          log.warn("Product {} (Volume: {}) for order {} could not be placed in any box.", product.productId(), product.volume(), orderRequest.orderId());
           unpackableProducts.add(product);
         }
       }
-    }
+    });
 
     List<PackedBoxResponse> packedBoxesShipment = currentlyOpenBoxes.stream()
         .map(openBox -> new PackedBoxResponse(
