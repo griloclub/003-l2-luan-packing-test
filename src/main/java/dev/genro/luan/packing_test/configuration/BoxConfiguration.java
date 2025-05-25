@@ -1,4 +1,4 @@
-package dev.genro.luan.packing_test.infrastructure.configuration;
+package dev.genro.luan.packing_test.configuration;
 
 import dev.genro.luan.packing_test.domain.model.BoxType;
 import dev.genro.luan.packing_test.domain.model.Dimension;
